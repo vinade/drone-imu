@@ -6,8 +6,8 @@
 #define GYR_ACC_K 0.5
 #define GYR_MAG_K 0.5
 
-#define ACC_MEASURED_WEIGHT 0.5
-#define GYR_MEASURED_WEIGHT 0.5
+#define ACC_MEASURED_WEIGHT 1
+#define GYR_MEASURED_WEIGHT 1
 #define GYR_OFFSET_SAMPLE 100
 
 class IMUSensor : public BasicSensor

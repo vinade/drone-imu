@@ -3,7 +3,7 @@
 
 #include "qmc5883l.cpp"
 
-#define MAG_MEASURED_WEIGHT 0.3
+#define MAG_MEASURED_WEIGHT 1
 #define MAG_OFFSET_SAMPLE 100
 
 class MagnetometerSensor : public BasicSensor
