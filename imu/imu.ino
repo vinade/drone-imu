@@ -36,8 +36,6 @@ void setup()
 
   communication = new Reporter();
   communication->setup();
-
-//  Serial.println("[setup] done.");
 }
 
 void loop()
@@ -45,30 +43,12 @@ void loop()
 
   imu->try_update();
 
-  Serial.print("\tconst_max:");
-  Serial.print(1);
-  Serial.print("\tconst_min:");
-  Serial.print(-1);
-  Serial.print("\tsize:");
-  Serial.print(sqrt(device_state.raw_magneto.x*device_state.raw_magneto.x + device_state.raw_magneto.y*device_state.raw_magneto.y +device_state.raw_magneto.z*device_state.raw_magneto.z));
   Serial.print("\tangleX:");
-  Serial.print(device_state.magneto.x);
+  Serial.print(device_state.angle.x);
   Serial.print("\tangleY:");
-  Serial.print(device_state.magneto.y);
+  Serial.print(device_state.angle.y);
   Serial.print("\tangleZ:");
-  Serial.print(device_state.magneto.z);
-  Serial.print("\tinitX:");
-  Serial.print(device_state.initial_mag.x);
-  Serial.print("\tinitY:");
-  Serial.print(device_state.initial_mag.y);
-  Serial.print("\tinitZ:");
-  Serial.println(device_state.initial_mag.z);
-//  Serial.print("\traw_angleX:");
-//  Serial.print(device_state.raw_magneto.x);
-//  Serial.print("\traw_angleY:");
-//  Serial.print(device_state.raw_magneto.y);
-//  Serial.print("\traw_angleZ:");
-//  Serial.println(device_state.raw_magneto.z);
+  Serial.print(device_state.angle.z);
 
 //  gps->try_update();
   //  if (gps->ready)

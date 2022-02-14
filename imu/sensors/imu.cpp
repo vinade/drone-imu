@@ -1,9 +1,7 @@
 /*
+Referências
 https://students.iitk.ac.in/roboclub/2017/12/21/Beginners-Guide-to-IMU.html
 https://engineering.stackexchange.com/questions/3348/calculating-pitch-yaw-and-roll-from-mag-acc-and-gyro-data
-
-
-
 */
 
 #ifndef IMU_SENSOR_CPP
@@ -101,8 +99,8 @@ void IMUSensor::update()
     ay = device_state.accel.y;
     az = device_state.accel.z;
 
-    float pitch_acc = angleAccY; // * 360 / -2.0 / PI
-    float roll_acc = angleAccX; // * 360 / 2.0 / PI
+    float pitch_acc = angleAccY;
+    float roll_acc = angleAccX;
     angleAccX = angleAccX * 360 / 2.0 / PI;
     angleAccY = angleAccY * 360 / 2.0 / PI;
 
