@@ -13,24 +13,24 @@ https://engineering.stackexchange.com/questions/3348/calculating-pitch-yaw-and-r
 
 IMUSensor::IMUSensor(MPU6050Sensor *a, MPU6050Sensor *b, MagnetometerSensor *m)
 {
-    this->gyro_a = a;
-    this->gyro_b = b;
+    this->mpu_a = a;
+    this->mpu_b = b;
     this->magneto = m;
     this->last_sample = millis();
 }
 
 void IMUSensor::setup_instance()
 {
-    if (this->gyro_a == NULL)
+    if (this->mpu_a == NULL)
     {
-        this->gyro_a = new MPU6050Sensor(I2C_ADDRESS_MPU6050_A);
-        this->gyro_a->setup_instance();
+        this->mpu_a = new MPU6050Sensor(I2C_ADDRESS_MPU6050_A);
+        this->mpu_a->setup_instance();
     }
 
-    if (this->gyro_b == NULL)
+    if (this->mpu_b == NULL)
     {
-        this->gyro_b = new MPU6050Sensor(I2C_ADDRESS_MPU6050_B);
-        this->gyro_b->setup_instance();
+        this->mpu_b = new MPU6050Sensor(I2C_ADDRESS_MPU6050_B);
+        this->mpu_b->setup_instance();
     }
 
     if (this->magneto == NULL)
@@ -58,70 +58,48 @@ float geometric_module(float a, int b)
 
 void IMUSensor::update()
 {
+    vec3float g, a;
     float mx, my, interval;
     float angleAccX, angleAccY;
-    float gx, gy, gz;
-    float ax, ay, az;
     float roll, pitch, yaw;
-    MPU6050Sensor *a = this->gyro_a;
-    MPU6050Sensor *b = this->gyro_b;
+    MPU6050Sensor *ga = this->mpu_a;
+    MPU6050Sensor *b = this->mpu_b;
     MagnetometerSensor *m = this->magneto;
 
-    a->try_update();
-    b->try_update();
-    m->try_update();
+    this->mpu_a->try_update();
+    this->mpu_b->try_update();
+    this->magneto->try_update();
 
-    ax = (a->accel.x + b->accel.x) / 2.0;
-    ay = (a->accel.y + b->accel.y) / 2.0;
-    az = (a->accel.z + b->accel.z) / 2.0;
+    a = (this->mpu_a->accel + this->mpu_b->accel) / 2.0;
+    g = (this->mpu_a->gyro + this->mpu_b->gyro) / 2.0;
 
-    device_state.accel.x = low_pass_filter(ax, &this->old_acc.x, ACC_MEASURED_WEIGHT);
-    device_state.accel.y = low_pass_filter(ay, &this->old_acc.y, ACC_MEASURED_WEIGHT);
-    device_state.accel.z = low_pass_filter(az, &this->old_acc.z, ACC_MEASURED_WEIGHT);
-
-    gx = (a->gyro.x + b->gyro.x) / 2.0;
-    gy = (a->gyro.y + b->gyro.y) / 2.0;
-    gz = (a->gyro.z + b->gyro.z) / 2.0;
+    device_state.accel = low_pass_filter(a, this->old_acc, ACC_MEASURED_WEIGHT);
 
     if (this->gyr_initial_counter <= GYR_OFFSET_SAMPLE){
-        this->offset_gyr.x += gx/float(GYR_OFFSET_SAMPLE);
-        this->offset_gyr.y += gy/float(GYR_OFFSET_SAMPLE);
-        this->offset_gyr.z += gz/float(GYR_OFFSET_SAMPLE);
+        this->offset_gyr += g/float(GYR_OFFSET_SAMPLE);
         this->gyr_initial_counter++;
     } else {
-        gx = low_pass_filter(gx - this->offset_gyr.x, &this->old_gyr.x, GYR_MEASURED_WEIGHT);
-        gy = low_pass_filter(gy - this->offset_gyr.y, &this->old_gyr.y, GYR_MEASURED_WEIGHT);
-        gz = low_pass_filter(gz - this->offset_gyr.z, &this->old_gyr.z, GYR_MEASURED_WEIGHT);
+        g = low_pass_filter(g - this->offset_gyr, this->old_gyr, GYR_MEASURED_WEIGHT);
     }
 
     angleAccY = atan2(device_state.accel.y, device_state.accel.z + abs(device_state.accel.x));
     angleAccX = atan2(device_state.accel.x, sqrt(device_state.accel.z * device_state.accel.z + device_state.accel.y * device_state.accel.y));
 
-    ax = device_state.accel.x;
-    ay = device_state.accel.y;
-    az = device_state.accel.z;
     angleAccX = angleAccX * TO_DEGREES;
     angleAccY = angleAccY * TO_DEGREES;
 
     interval = (millis() - this->last_sample) * 0.001;
-    device_state.angle.x = (GYR_ACC_K * (device_state.angle.x + gx * interval)) + ((1.0 - GYR_ACC_K) * angleAccX);
-    device_state.angle.y = (GYR_ACC_K * (device_state.angle.y + gy * interval)) + ((1.0 - GYR_ACC_K) * angleAccY);
+    device_state.angle.x = (GYR_ACC_K * (device_state.angle.x + g.x * interval)) + ((1.0 - GYR_ACC_K) * angleAccX);
+    device_state.angle.y = (GYR_ACC_K * (device_state.angle.y + g.y * interval)) + ((1.0 - GYR_ACC_K) * angleAccY);
 
-    //temp
-    // ax = device_state.angle.x;
-    // device_state.angle.x = device_state.angle.y;
-    // device_state.angle.y = -ax;
-
-    ax = device_state.magneto.x;
-    ay = device_state.magneto.y;
-    az = device_state.magneto.z;
+    a = device_state.magneto;
     roll = device_state.angle.y * TO_RAD;
     pitch = -device_state.angle.x * TO_RAD;
 
-    mx = ax * cos(pitch) + ay * sin(pitch) * sin(roll) + az * sin(pitch) * cos(roll);
-    my = -ay * cos(roll) + az * sin(roll);
+    mx = a.x * cos(pitch) + a.y * sin(pitch) * sin(roll) + a.z * sin(pitch) * cos(roll);
+    my = -a.y * cos(roll) + a.z * sin(roll);
     yaw = atan2(my, mx);
-    device_state.angle.z = (GYR_MAG_K * (device_state.angle.z + gz * interval)) + ((1.0 - GYR_MAG_K) * yaw * TO_DEGREES);
+    device_state.angle.z = (GYR_MAG_K * (device_state.angle.z + g.z * interval)) + ((1.0 - GYR_MAG_K) * yaw * TO_DEGREES);
 
     this->last_sample = millis();
 }

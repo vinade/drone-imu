@@ -13,8 +13,8 @@
 class IMUSensor : public BasicSensor
 {
 private:
-    MPU6050Sensor *gyro_a = NULL;
-    MPU6050Sensor *gyro_b = NULL;
+    MPU6050Sensor *mpu_a = NULL;
+    MPU6050Sensor *mpu_b = NULL;
     MagnetometerSensor *magneto = NULL;
     int gyr_initial_counter = 0;
 
