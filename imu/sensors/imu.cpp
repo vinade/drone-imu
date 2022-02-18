@@ -93,8 +93,8 @@ void IMUSensor::update()
     device_state.angle.y = (GYR_ACC_K * (device_state.angle.y + g.y * interval)) + ((1.0 - GYR_ACC_K) * angleAccY);
 
     a = device_state.magneto;
-    roll = device_state.angle.y * TO_RAD;
-    pitch = -device_state.angle.x * TO_RAD;
+    roll = device_state.angle.x * TO_RAD;
+    pitch = device_state.angle.y * TO_RAD;
 
     mx = a.x * cos(pitch) + a.y * sin(pitch) * sin(roll) + a.z * sin(pitch) * cos(roll);
     my = -a.y * cos(roll) + a.z * sin(roll);

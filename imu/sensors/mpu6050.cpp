@@ -43,29 +43,33 @@ void MPU6050Sensor::update()
 
     if (Wire.available() == 14)
     {
-        // nop
         int16_t ax, ay, az;
         int16_t gx, gy, gz;
         int16_t t;
 
-        ax = Wire.read() << 8 | Wire.read();
+        /*
+            A troca dos eixos x e y, e inversão do eixo x, é ncessária para a conversão do sistema
+            de coordenadas do sensor para o sistema de coordenadas do drone
+        */
+
         ay = Wire.read() << 8 | Wire.read();
+        ax = Wire.read() << 8 | Wire.read();
         az = Wire.read() << 8 | Wire.read();
 
         t = Wire.read() << 8 | Wire.read();
 
-        gx = Wire.read() << 8 | Wire.read();
         gy = Wire.read() << 8 | Wire.read();
+        gx = Wire.read() << 8 | Wire.read();
         gz = Wire.read() << 8 | Wire.read();
 
         this->temperature = (t + 12412.0) / 340.0;
 
         this->accel.x = ((float)ax) / 16384.0;
-        this->accel.y = ((float)ay) / 16384.0;
+        this->accel.y = -((float)ay) / 16384.0;
         this->accel.z = ((float)az) / 16384.0;
 
         this->gyro.x = ((float)gx) / 65.5;
-        this->gyro.y = ((float)gy) / 65.5;
+        this->gyro.y = -((float)gy) / 65.5;
         this->gyro.z = ((float)gz) / 65.5;
 
         this->gyro.x -= this->gyro_offset.x;
@@ -88,12 +92,12 @@ void MPU6050Sensor::calibrate(unsigned int sample_size)
         Wire.endTransmission(false);
         Wire.requestFrom(this->address, 6);
 
-        rx = Wire.read() << 8 | Wire.read();
         ry = Wire.read() << 8 | Wire.read();
+        rx = Wire.read() << 8 | Wire.read();
         rz = Wire.read() << 8 | Wire.read();
 
         x += ((float)rx) / 65.5;
-        y += ((float)ry) / 65.5;
+        y -= ((float)ry) / 65.5;
         z += ((float)rz) / 65.5;
     }
 
