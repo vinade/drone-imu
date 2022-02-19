@@ -23,4 +23,20 @@ vec3float low_pass_filter(vec3float value, vec3float& acc, float weight)
     return aux;
 }
 
+float min_threshold(float value, float limit)
+{
+    if (abs(value) < limit){
+        return 0;
+    }
+
+    return value;
+}
+
+inline void min_threshold(vec3float& value, vec3float limit)
+{
+    value.x = (abs(value.x) < limit.x)? 0 : value.x;
+    value.y = (abs(value.y) < limit.y)? 0 : value.y;
+    value.z = (abs(value.z) < limit.z)? 0 : value.z;
+}
+
 #endif

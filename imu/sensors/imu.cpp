@@ -119,34 +119,65 @@ void IMUSensor::reset_reference(){
 
 void IMUSensor::update_reference(){
     float half_interval;
-    vec3float gravity = this->offset_accel; // inverter o vetor de aceleração
+    vec3float gravity = this->offset_accel; // Força da gravidade
     vec3float angle = device_state.angle * TO_RAD;
     vec3float reference_accel = device_state.accel;
     vec3float last_velocity = device_state.accel_estimative_velocity;
 
+    // Rotação do vetor da gravidade do eixo Z, para a situação de pitch/roll do drone
     gravity.rotate_X(angle.y);
     gravity.rotate_Y(-angle.x);
 
+    // inversão de vetor força e remoção da força da gravidade
     reference_accel = reference_accel * -1;
     reference_accel += gravity;
 
-    if (this->gyr_initial_counter <= 2 * GYR_OFFSET_SAMPLE){
-        this->offset_reference_accel += reference_accel/float(GYR_OFFSET_SAMPLE);
+    // Remoção de ruído
+    if (this->gyr_initial_counter < REF_MUL_SAMPLE * GYR_OFFSET_SAMPLE){
+        this->offset_reference_accel += reference_accel/float((REF_MUL_SAMPLE - 1) * GYR_OFFSET_SAMPLE);
         this->gyr_initial_counter++;
+
+        if (abs(reference_accel.x) > this->max_deviation_accel.x){
+            this->max_deviation_accel.x = abs(reference_accel.x);
+        }
+
+        if (abs(reference_accel.y) > this->max_deviation_accel.y){
+            this->max_deviation_accel.y = abs(reference_accel.y);
+        }
+
+        if (abs(reference_accel.z) > this->max_deviation_accel.z){
+            this->max_deviation_accel.z = abs(reference_accel.z);
+        }
+
         return;
+    }
+
+    if (this->gyr_initial_counter == REF_MUL_SAMPLE * GYR_OFFSET_SAMPLE){
+        this->max_deviation_accel -= vabs(this->offset_reference_accel);
+        // this->max_deviation_accel = this->max_deviation_accel * 1.1;
+        this->max_deviation_accel = this->max_deviation_accel;
+        this->gyr_initial_counter++;
     }
 
     reference_accel -= this->offset_reference_accel;
     reference_accel = low_pass_filter(reference_accel, this->old_acc_ref, REF_MEASURED_WEIGHT);
 
+    // ignora acelerações abaixo do ruído captado
+    min_threshold(reference_accel, this->max_deviation_accel);
+
+    // transforma o vetor de aceleração para as coordenadas do mundo
     reference_accel.rotate_X(-angle.y);
     reference_accel.rotate_Y(angle.x);
     // reference_accel.rotate_Z(angle.z);
 
+    // cálculo de velocidade e posição
     half_interval = this->dt()/2.0;
     device_state.accel_estimative_velocity += (reference_accel + this->last_accel) * half_interval;
     device_state.accel_estimative_position += (last_velocity + device_state.accel_estimative_velocity) * half_interval;
     this->last_accel = reference_accel;
+
+    // evita drift infinito.de posição..
+    device_state.accel_estimative_velocity = device_state.accel_estimative_velocity * 0.99;
 
 }
 

@@ -134,4 +134,13 @@ inline const vec3float operator-(const float v, vec3float& vector) {
     return vector - v;
 }
 
+inline const vec3float vabs(vec3float& v){
+    vec3float res {
+        abs(v.x),
+        abs(v.y),
+        abs(v.z)
+    };
+    return res;
+}
+
 #endif

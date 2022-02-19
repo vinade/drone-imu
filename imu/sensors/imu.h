@@ -10,6 +10,7 @@
 #define ACC_MEASURED_WEIGHT 1
 #define GYR_MEASURED_WEIGHT 1
 #define GYR_OFFSET_SAMPLE 100
+#define REF_MUL_SAMPLE 2
 
 class IMUSensor : public BasicSensor
 {
@@ -26,6 +27,8 @@ private:
     vec3float last_accel = {0, 0, 0};
     vec3float offset_reference_accel = {0, 0, 0};
     vec3float old_acc_ref = {0, 0, 0};
+
+    vec3float max_deviation_accel = {0, 0, 0};
 
     long last_sample;
 
