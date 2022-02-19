@@ -14,14 +14,14 @@ void Reporter::setup()
 {
 #ifdef REPORTER_WIFI
     esp_com->setup();
-    Serial.println("WIFI CONFIGURADA");
+    // Serial.println("WIFI CONFIGURADA");
     esp_com->send_cmd("AT+CIFSR", 300);
 
     delay(1000);
-    while (esp_serial.available())
-    {
-        Serial.print((char)(esp_serial.read()));
-    }
+    // while (esp_serial.available())
+    // {
+    //     Serial.print((char)(esp_serial.read()));
+    // }
 
 #endif
     this->last_check = millis();

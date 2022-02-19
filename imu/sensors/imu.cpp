@@ -39,6 +39,7 @@ void IMUSensor::setup_instance()
         this->magneto->setup_instance();
     }
 
+    this->reset_reference();
     this->last_sample = millis();
 }
 
@@ -77,18 +78,19 @@ void IMUSensor::update()
 
     if (this->gyr_initial_counter <= GYR_OFFSET_SAMPLE){
         this->offset_gyr += g/float(GYR_OFFSET_SAMPLE);
+        this->offset_accel += a/float(GYR_OFFSET_SAMPLE);
         this->gyr_initial_counter++;
     } else {
         g = low_pass_filter(g - this->offset_gyr, this->old_gyr, GYR_MEASURED_WEIGHT);
     }
 
-    angleAccY = atan2(device_state.accel.y, device_state.accel.z + abs(device_state.accel.x));
-    angleAccX = atan2(device_state.accel.x, sqrt(device_state.accel.z * device_state.accel.z + device_state.accel.y * device_state.accel.y));
+    angleAccY = atan2(device_state.accel.y, - device_state.accel.z + abs(device_state.accel.x)/2.0);
+    angleAccX = atan2(device_state.accel.x, sqrt(device_state.accel.z * device_state.accel.z + device_state.accel.y * device_state.accel.y) - abs(device_state.accel.y)/3.0);
 
     angleAccX = angleAccX * TO_DEGREES;
     angleAccY = angleAccY * TO_DEGREES;
 
-    interval = (millis() - this->last_sample) * 0.001;
+    interval = this->dt();
     device_state.angle.x = (GYR_ACC_K * (device_state.angle.x + g.x * interval)) + ((1.0 - GYR_ACC_K) * angleAccX);
     device_state.angle.y = (GYR_ACC_K * (device_state.angle.y + g.y * interval)) + ((1.0 - GYR_ACC_K) * angleAccY);
 
@@ -101,7 +103,55 @@ void IMUSensor::update()
     yaw = atan2(my, mx);
     device_state.angle.z = (GYR_MAG_K * (device_state.angle.z + g.z * interval)) + ((1.0 - GYR_MAG_K) * yaw * TO_DEGREES);
 
+    if (this->gyr_initial_counter > GYR_OFFSET_SAMPLE){
+        this->update_reference();
+    }
+
     this->last_sample = millis();
+}
+
+
+void IMUSensor::reset_reference(){
+    device_state.accel_estimative_position = 0;
+    device_state.accel_estimative_velocity = 0;
+    this->last_sample = millis();
+}
+
+void IMUSensor::update_reference(){
+    float half_interval;
+    vec3float gravity = this->offset_accel; // inverter o vetor de aceleração
+    vec3float angle = device_state.angle * TO_RAD;
+    vec3float reference_accel = device_state.accel;
+    vec3float last_velocity = device_state.accel_estimative_velocity;
+
+    gravity.rotate_X(angle.y);
+    gravity.rotate_Y(-angle.x);
+
+    reference_accel = reference_accel * -1;
+    reference_accel += gravity;
+
+    if (this->gyr_initial_counter <= 2 * GYR_OFFSET_SAMPLE){
+        this->offset_reference_accel += reference_accel/float(GYR_OFFSET_SAMPLE);
+        this->gyr_initial_counter++;
+        return;
+    }
+
+    reference_accel -= this->offset_reference_accel;
+    reference_accel = low_pass_filter(reference_accel, this->old_acc_ref, REF_MEASURED_WEIGHT);
+
+    reference_accel.rotate_X(-angle.y);
+    reference_accel.rotate_Y(angle.x);
+    // reference_accel.rotate_Z(angle.z);
+
+    half_interval = this->dt()/2.0;
+    device_state.accel_estimative_velocity += (reference_accel + this->last_accel) * half_interval;
+    device_state.accel_estimative_position += (last_velocity + device_state.accel_estimative_velocity) * half_interval;
+    this->last_accel = reference_accel;
+
+}
+
+float IMUSensor::dt(){
+    return (millis() - this->last_sample) * 0.001;
 }
 
 #endif

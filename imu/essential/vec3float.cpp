@@ -4,6 +4,13 @@
 #include "vec3float.h"
 
 
+inline vec3float& vec3float::operator=(const float s){
+    this->x = s;
+    this->y = s;
+    this->z = s;
+    return *this;
+}
+
 inline vec3float& vec3float::operator=(const vec3float& v){
     this->x = v.x;
     this->y = v.y;

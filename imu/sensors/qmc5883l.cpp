@@ -21,12 +21,12 @@ void QMC5883LSensor::setup_instance()
         this->offset.z = 0;
     }
 
-    Serial.print("\toffsetX:");
-    Serial.print(this->offset.x);
-    Serial.print("\toffsetY:");
-    Serial.print(this->offset.y);
-    Serial.print("\toffsetZ:");
-    Serial.print(this->offset.z);
+    // Serial.print("\toffsetX:");
+    // Serial.print(this->offset.x);
+    // Serial.print("\toffsetY:");
+    // Serial.print(this->offset.y);
+    // Serial.print("\toffsetZ:");
+    // Serial.print(this->offset.z);
 #endif
 
     this->write(0x0B, 0x01);

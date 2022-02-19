@@ -9,6 +9,7 @@ typedef struct st_vec3float
     float y;
     float z;
 
+    inline st_vec3float& operator=(const float);
     inline st_vec3float& operator=(const st_vec3float&);
     inline st_vec3float& operator+=(const st_vec3float&);
     inline st_vec3float& operator-=(const st_vec3float&);

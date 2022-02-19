@@ -66,11 +66,11 @@ void MPU6050Sensor::update()
 
         this->accel.x = ((float)ax) / 16384.0;
         this->accel.y = -((float)ay) / 16384.0;
-        this->accel.z = ((float)az) / 16384.0;
+        this->accel.z = -((float)az) / 16384.0;
 
         this->gyro.x = ((float)gx) / 65.5;
         this->gyro.y = -((float)gy) / 65.5;
-        this->gyro.z = ((float)gz) / 65.5;
+        this->gyro.z = -((float)gz) / 65.5;
 
         this->gyro.x -= this->gyro_offset.x;
         this->gyro.y -= this->gyro_offset.y;

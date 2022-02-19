@@ -43,12 +43,12 @@ void loop()
 
   imu->try_update();
 
-  Serial.print("\tangleX:");
-  Serial.print(device_state.angle.x);
-  Serial.print("\tangleY:");
-  Serial.print(device_state.angle.y);
-  Serial.print("\tangleZ:");
-  Serial.print(device_state.angle.z);
+//  Serial.print("\tangleX:");
+//  Serial.print(device_state.angle.x);
+//  Serial.print("\tangleY:");
+//  Serial.print(device_state.angle.y);
+//  Serial.print("\tangleZ:");
+//  Serial.println(device_state.angle.z);
 
 //  gps->try_update();
   //  if (gps->ready)

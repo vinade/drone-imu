@@ -6,6 +6,7 @@
 #define GYR_ACC_K 0.5
 #define GYR_MAG_K 0.5
 
+#define REF_MEASURED_WEIGHT 0.5
 #define ACC_MEASURED_WEIGHT 1
 #define GYR_MEASURED_WEIGHT 1
 #define GYR_OFFSET_SAMPLE 100
@@ -21,14 +22,22 @@ private:
     vec3float old_acc = {0, 0, 0};
     vec3float old_gyr = {0, 0, 0};
     vec3float offset_gyr = {0, 0, 0};
+    vec3float offset_accel = {0, 0, 0};
+    vec3float last_accel = {0, 0, 0};
+    vec3float offset_reference_accel = {0, 0, 0};
+    vec3float old_acc_ref = {0, 0, 0};
 
     long last_sample;
+
+    float dt();
 
 public:
     IMUSensor(){};
     IMUSensor(MPU6050Sensor *a, MPU6050Sensor *b, MagnetometerSensor *m);
     void setup_instance();
     void update();
+    void update_reference();
+    void reset_reference();
 };
 
 #endif

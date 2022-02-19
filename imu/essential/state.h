@@ -10,8 +10,8 @@ typedef struct struct_state
     vec3float accel;
     vec3float coords;
     vec3float magneto; // 48
-    vec3float raw_magneto; // 48
-    vec3float initial_mag = {0, 0, 0}; // 48
+    vec3float accel_estimative_position;
+    vec3float accel_estimative_velocity;
 
     float height;
     float distance_ground; // 56 bytes
