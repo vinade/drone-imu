@@ -77,6 +77,7 @@ void IMUSensor::update()
     device_state.accel = low_pass_filter(a, this->old_acc, ACC_MEASURED_WEIGHT);
 
     if (this->gyr_initial_counter <= GYR_OFFSET_SAMPLE){
+        device_state.status = STATUS_CALIBRATING_GYROS_ACCEL;
         this->offset_gyr += g/float(GYR_OFFSET_SAMPLE);
         this->offset_accel += a/float(GYR_OFFSET_SAMPLE);
         this->gyr_initial_counter++;
@@ -134,6 +135,8 @@ void IMUSensor::update_reference(){
 
     // Remoção de ruído
     if (this->gyr_initial_counter < REF_MUL_SAMPLE * GYR_OFFSET_SAMPLE){
+        device_state.status = STATUS_CALIBRATING_ACCEL_ESTIMATIVE;
+
         this->offset_reference_accel += reference_accel/float((REF_MUL_SAMPLE - 1) * GYR_OFFSET_SAMPLE);
         this->gyr_initial_counter++;
 
@@ -157,6 +160,7 @@ void IMUSensor::update_reference(){
         // this->max_deviation_accel = this->max_deviation_accel * 1.1;
         this->max_deviation_accel = this->max_deviation_accel;
         this->gyr_initial_counter++;
+        device_state.status = STATUS_READY;
     }
 
     reference_accel -= this->offset_reference_accel;

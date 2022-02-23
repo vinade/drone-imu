@@ -16,6 +16,8 @@ Reporter *communication;
 
 void setup()
 {
+  device_state.status = STATUS_SYSTEM_SETUP;
+
   Serial.begin(9600);
   while (!Serial)
     ;
@@ -34,6 +36,7 @@ void setup()
   imu = new IMUSensor();
   imu->setup_instance();
 
+  device_state.status = STATUS_CONNECTING;
   communication = new Reporter();
   communication->setup();
 }
